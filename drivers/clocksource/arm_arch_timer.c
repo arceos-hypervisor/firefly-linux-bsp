@@ -1234,6 +1234,8 @@ static bool __init arch_timer_needs_of_probing(void)
 
 static int __init arch_timer_common_init(void)
 {
+	pr_warn("[DEBUG] %s\n", __func__);
+
 	arch_timer_banner(arch_timers_present);
 	arch_counter_register(arch_timers_present);
 	return arch_timer_arch_init();
@@ -1282,6 +1284,8 @@ static int __init arch_timer_of_init(struct device_node *np)
 {
 	int i, ret;
 	u32 rate;
+
+	pr_warn("[DEBUG] %s Probing %s timer node\n",__func__, np->name);
 
 	if (arch_timers_present & ARCH_TIMER_TYPE_CP15) {
 		pr_warn("multiple nodes in dt, skipping\n");

@@ -2429,11 +2429,16 @@ static void __init rk3588_clk_init(struct device_node *np)
 	void __iomem *reg_base;
 	struct clk **clks;
 
+	pr_warn("[DEBUG] %s: initializing RK3588 clock driver\n", __func__);
+	pr_warn("[DEBUG] %s: np->name name:%s full_name: %s\n", __func__, np->name, np->full_name);
+
 	reg_base = of_iomap(np, 0);
 	if (!reg_base) {
 		pr_err("%s: could not map cru region\n", __func__);
 		return;
 	}
+
+	pr_warn("[DEBUG] %s: cru base address: %p\n", __func__, reg_base);
 
 	rk3588_cru_base = reg_base;
 
@@ -2443,37 +2448,55 @@ static void __init rk3588_clk_init(struct device_node *np)
 		iounmap(reg_base);
 		return;
 	}
+
+	pr_warn("[DEBUG] %s: rockchip clk init success\n", __func__);
+
 	clks = ctx->clk_data.clks;
 
 	rockchip_clk_register_plls(ctx, rk3588_pll_clks,
 				   ARRAY_SIZE(rk3588_pll_clks),
 				   RK3588_GRF_SOC_STATUS0);
+	
+	pr_warn("[DEBUG] %s: registered PLLs\n", __func__);
 
 	rockchip_clk_register_armclk(ctx, ARMCLK_L, "armclk_l",
 			3, clks[PLL_LPLL], clks[PLL_GPLL],
 			&rk3588_cpulclk_data, rk3588_cpulclk_rates,
 			ARRAY_SIZE(rk3588_cpulclk_rates));
+
+	pr_warn("[DEBUG] %s: registered ARMCLK_L\n", __func__);
+
+	
 	rockchip_clk_register_armclk(ctx, ARMCLK_B01, "armclk_b01",
 			3, clks[PLL_B0PLL], clks[PLL_GPLL],
 			&rk3588_cpub0clk_data, rk3588_cpub0clk_rates,
 			ARRAY_SIZE(rk3588_cpub0clk_rates));
+	pr_warn("[DEBUG] %s: registered ARMCLK_B01\n", __func__);
 	rockchip_clk_register_armclk(ctx, ARMCLK_B23, "armclk_b23",
 			3, clks[PLL_B1PLL], clks[PLL_GPLL],
 			&rk3588_cpub1clk_data, rk3588_cpub1clk_rates,
 			ARRAY_SIZE(rk3588_cpub1clk_rates));
+	pr_warn("[DEBUG] %s: registered ARMCLK_B23\n", __func__);
 
 	rockchip_clk_register_branches(ctx, rk3588_clk_branches,
 				       ARRAY_SIZE(rk3588_clk_branches));
+	pr_warn("[DEBUG] %s: registered branches\n", __func__);
 
 	rockchip_register_softrst(np, 49158, reg_base + RK3588_SOFTRST_CON(0),
 				  ROCKCHIP_SOFTRST_HIWORD_MASK);
+				  pr_warn("[DEBUG] %s: registered soft reset\n", __func__);
 
 	rockchip_register_restart_notifier(ctx, RK3588_GLB_SRST_FST, NULL);
+	pr_warn("[DEBUG] %s: registered restart notifier\n", __func__);
 
 	rockchip_clk_of_add_provider(np, ctx);
+	
+	pr_warn("[DEBUG] %s: added clock provider\n", __func__);
 
 	if (!rk_dump_cru)
 		rk_dump_cru = rk3588_dump_cru;
+
+	pr_warn("[DEBUG] %s: RK3588 clock driver initialized\n", __func__);
 }
 
 CLK_OF_DECLARE(rk3588_cru, "rockchip,rk3588-cru", rk3588_clk_init);

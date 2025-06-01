@@ -957,12 +957,20 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	init_IRQ();
 	tick_init();
 	rcu_init_nohz();
+
+	pr_warn("DEBUG rcu_init_nohz finished\n");
 	init_timers();
+	pr_warn("DEBUG init_timers finished\n");
 	hrtimers_init();
+	pr_warn("DEBUG hrtimers_init finished\n");
 	softirq_init();
+	pr_warn("DEBUG softirq_init finished\n");
 	timekeeping_init();
+	pr_warn("DEBUG timekeeping_init finished\n");
 	kfence_init();
+	pr_warn("DEBUG kfence_init finished\n");
 	time_init();
+	pr_warn("DEBUG time_init finished\n");
 
 	/*
 	 * For best initial stack canary entropy, prepare it after:

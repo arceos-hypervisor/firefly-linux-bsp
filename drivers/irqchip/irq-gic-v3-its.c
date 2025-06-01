@@ -2228,6 +2228,9 @@ static bool gic_check_reserved_range(phys_addr_t addr, unsigned long size)
 	addr_end = addr + size - 1;
 
 	for_each_reserved_mem_range(i, &start, &end) {
+		pr_warn("GICv3: Checking reserved range [%llx~%llx]\n",
+			start, end);
+
 		if (addr >= start && addr_end <= end)
 			return true;
 	}
@@ -3103,6 +3106,8 @@ static void its_cpu_init_lpis(void)
 	if (gic_data_rdist()->lpi_enabled)
 		return;
 
+	pr_warn("GICv3: its_cpu_init_lpis\n");
+
 	val = readl_relaxed(rbase + GICR_CTLR);
 	if ((gic_rdists->flags & RDIST_FLAGS_RD_TABLES_PREALLOCATED) &&
 	    (val & GICR_CTLR_ENABLE_LPIS)) {
@@ -3110,6 +3115,8 @@ static void its_cpu_init_lpis(void)
 		 * Check that we get the same property table on all
 		 * RDs. If we don't, this is hopeless.
 		 */
+		pr_warn("GICv3: RDIST_FLAGS_RD_TABLES_PREALLOCATED\n");
+
 		paddr = gicr_read_propbaser(rbase + GICR_PROPBASER);
 		paddr &= GENMASK_ULL(51, 12);
 		if (WARN_ON(gic_rdists->prop_table_pa != paddr))

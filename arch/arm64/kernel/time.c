@@ -55,7 +55,9 @@ void __init time_init(void)
 {
 	u32 arch_timer_rate;
 
+	pr_warn("[DEBUG] time_init\n");
 	of_clk_init(NULL);
+	pr_warn("[DEBUG] of_clk_init finished\n");
 	timer_probe();
 
 	tick_setup_hrtimer_broadcast();

@@ -1422,7 +1422,7 @@ static int rockchip_rk3588_pll_set_params(struct rockchip_clk_pll *pll,
 	int cur_parent;
 	int ret;
 
-	pr_debug("%s: rate settings for %lu p: %d, m: %d, s: %d, k: %d\n",
+	pr_warn("%s: rate settings for %lu p: %d, m: %d, s: %d, k: %d\n",
 		__func__, rate->rate, rate->p, rate->m, rate->s, rate->k);
 
 	rockchip_rk3588_pll_get_params(pll, &cur);
@@ -1483,7 +1483,7 @@ static int rockchip_rk3588_pll_set_rate(struct clk_hw *hw, unsigned long drate,
 	unsigned long old_rate = rockchip_rk3588_pll_recalc_rate(hw, prate);
 	int ret;
 
-	pr_debug("%s: changing %s from %lu to %lu with a parent rate of %lu\n",
+	pr_warn("%s: changing %s from %lu to %lu with a parent rate of %lu\n",
 		 __func__, __clk_get_name(hw->clk), old_rate, drate, prate);
 
 	/* Get required rate settings from table */
@@ -1493,6 +1493,9 @@ static int rockchip_rk3588_pll_set_rate(struct clk_hw *hw, unsigned long drate,
 			drate, __clk_get_name(hw->clk));
 		return -EINVAL;
 	}
+
+	pr_warn("rockchip_get_pll_settings: rate settings for %lu p: %d, m: %d, s: %d, k: %d\n",
+		rate->rate, rate->p, rate->m, rate->s, rate->k);
 
 	ret = rockchip_rk3588_pll_set_params(pll, rate);
 	if (ret)
