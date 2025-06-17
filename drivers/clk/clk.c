@@ -4683,8 +4683,6 @@ int of_clk_add_provider(struct device_node *np,
 	if (!np)
 		return 0;
 
-	pr_warn("[DEBUG] %s name %s", __func__, np->name);
-
 	cp = kzalloc(sizeof(*cp), GFP_KERNEL);
 	if (!cp)
 		return -ENOMEM;
@@ -4696,7 +4694,7 @@ int of_clk_add_provider(struct device_node *np,
 	mutex_lock(&of_clk_mutex);
 	list_add(&cp->link, &of_clk_providers);
 	mutex_unlock(&of_clk_mutex);
-	pr_warn("Added clock from %pOF\n", np);
+	pr_debug("Added clock from %pOF\n", np);
 
 	clk_core_reparent_orphans();
 
@@ -4705,8 +4703,6 @@ int of_clk_add_provider(struct device_node *np,
 		of_clk_del_provider(np);
 
 	fwnode_dev_initialized(&np->fwnode, true);
-
-	pr_warn("[DEBUG] %s name %s finished!!!", __func__, np->name);
 
 	return ret;
 }
@@ -5161,9 +5157,6 @@ static int parent_ready(struct device_node *np)
 	while (true) {
 		struct clk *clk = of_clk_get(np, i);
 
-		// pr_warn("[DEBUG] of_clk_get clk name = %s, index = %d\n",
-		// 	clk ? __clk_get_name(clk) : "NULL", i);
-
 		/* this parent is ready we can check the next one */
 		if (!IS_ERR(clk)) {
 			clk_put(clk);
@@ -5174,12 +5167,6 @@ static int parent_ready(struct device_node *np)
 		/* at least one parent is not ready, we exit now */
 		if (PTR_ERR(clk) == -EPROBE_DEFER)
 			return 0;
-
-		pr_warn("[DEBUG] %pOF's parent is not ready, error %ld\n",
-			np,
-			PTR_ERR(clk));
-
-		pr_warn("[DEBUG] Here we make assumption that the device tree is written correctly\n");
 
 		/*
 		 * Here we make assumption that the device tree is
@@ -5245,24 +5232,15 @@ void __init of_clk_init(const struct of_device_id *matches)
 	bool force = false;
 	LIST_HEAD(clk_provider_list);
 
-	pr_warn("[DEBUG]: matches ptr = %px\n", matches);
-
 	if (!matches)
 		matches = &__clk_of_table;
-
-	pr_warn("[DEBUG]: of_clk_init matches ptr = %px\n", matches);
-	pr_warn("[DEBUG]: of_clk_init matches->compatible = %s\n", matches ? matches->compatible : "NULL");
 
 	/* First prepare the list of the clocks providers */
 	for_each_matching_node_and_match(np, matches, &match) {
 		struct clock_provider *parent;
 
-		pr_warn("[DEBUG] of_clk_init: check clock provider %pOF\n", np);
-
-		if (!of_device_is_available(np)) {
-			pr_warn("[DEBUG] of_clk_init: clock provider %pOF is not available\n", np);
+		if (!of_device_is_available(np))
 			continue;
-		}
 
 		parent = kzalloc(sizeof(*parent), GFP_KERNEL);
 		if (!parent) {
@@ -5276,8 +5254,6 @@ void __init of_clk_init(const struct of_device_id *matches)
 			return;
 		}
 
-		pr_warn("[DEBUG] of_clk_init: clock provider %pOF is available\n", np);
-
 		parent->clk_init_cb = match->data;
 		parent->np = of_node_get(np);
 		list_add_tail(&parent->node, &clk_provider_list);
@@ -5287,34 +5263,19 @@ void __init of_clk_init(const struct of_device_id *matches)
 		is_init_done = false;
 		list_for_each_entry_safe(clk_provider, next,
 					&clk_provider_list, node) {
-			if (force || (parent_ready(clk_provider->np) && 
-			// A simple patch to skip clock-controller nodes in the first loop.
-				      strcmp(clk_provider->np->name, "clock-controller") != 0)) {
+			if (force || parent_ready(clk_provider->np)) {
 
 				/* Don't populate platform devices */
 				of_node_set_flag(clk_provider->np,
 						 OF_POPULATED);
 
-				pr_warn("[DEBUG] Calling clk_provider->clk_init_cb for %pOF\n", clk_provider->np);
-				pr_warn("[DEBUG] Calling clk_provider->clk_init_cb for name %s %s\n", clk_provider->np->name,
-					of_node_full_name(clk_provider->np));
-
 				clk_provider->clk_init_cb(clk_provider->np);
-
-				pr_warn("[DEBUG] Returned from clk_provider->clk_init_cb for %pOF\n", clk_provider->np);
 				of_clk_set_defaults(clk_provider->np, true);
 
 				list_del(&clk_provider->node);
 				of_node_put(clk_provider->np);
 				kfree(clk_provider);
 				is_init_done = true;
-			} else if (strcmp(clk_provider->np->name, "clock-controller") == 0)
-			{
-				pr_warn("[DEBUG] of_clk_init: clock provider %pOF is a clock-controller, we just skip it for the first time\n",
-					clk_provider->np);
-			} else{
-				pr_warn("[DEBUG] of_clk_init: clock provider %pOF is not ready yet\n",
-					clk_provider->np);
 			}
 		}
 
@@ -5327,7 +5288,6 @@ void __init of_clk_init(const struct of_device_id *matches)
 		if (!is_init_done)
 			force = true;
 	}
-	pr_warn("[DEBUG]: of_clk_init: return\n");
 }
 #endif
 

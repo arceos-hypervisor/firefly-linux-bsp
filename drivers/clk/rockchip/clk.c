@@ -415,9 +415,6 @@ struct rockchip_clk_provider *rockchip_clk_init(struct device_node *np,
 	struct clk **clk_table;
 	int i;
 
-	pr_warn("[DEBUG] %s: initializing rockchip clock driver\n", __func__);
-	pr_warn("[DEBUG] %s: np->name name:%s full_name: %s\n", __func__, np->name, np->full_name);
-
 	ctx = kzalloc(sizeof(struct rockchip_clk_provider), GFP_KERNEL);
 	if (!ctx)
 		return ERR_PTR(-ENOMEM);

@@ -296,45 +296,14 @@ u64 cpu_logical_map(unsigned int cpu)
 	return __cpu_logical_map[cpu];
 }
 
-static inline u64 read_cntvct_el0(void)
-{
-    u64 val;
-    asm volatile("mrs %0, cntvct_el0" : "=r" (val));
-    return val;
-}
-
-static inline u64 read_cntpct_el0(void)
-{
-    u64 val;
-    asm volatile("mrs %0, cntpct_el0" : "=r" (val));
-    return val;
-}
-
 void __init __no_sanitize_address setup_arch(char **cmdline_p)
 {
-	u64 t1, pt1, t2, pt2;
-	
 	init_mm.start_code = (unsigned long) _text;
 	init_mm.end_code   = (unsigned long) _etext;
 	init_mm.end_data   = (unsigned long) _edata;
 	init_mm.brk	   = (unsigned long) _end;
 
 	*cmdline_p = boot_command_line;
-
-	pr_warn("Booting Linux on ARM64 with %s\n", cmdline_p ? *cmdline_p : "no command line");
-
-	t1 = read_cntvct_el0();
-	pt1 = read_cntpct_el0();
-    mdelay(10); // wait 10 ms
-    t2 = read_cntvct_el0();
-	pt2 = read_cntpct_el0();
-
-    pr_info("CNTVCT_EL0 before delay: %llu\n", t1);
-    pr_info("CNTPCT_EL0 before  delay: %llu\n", pt1);
-    pr_info("CNTVCT_EL0 after  delay: %llu\n", t2);
-    pr_info("CNTPCT_EL0 after  delay: %llu\n", pt2);
-    pr_info("CNTVCT delta: %llu\n", t2 - t1);
-    pr_info("CNTPCT delta: %llu\n", pt2 - pt1);
 
 	/*
 	 * If know now we are going to need KPTI then use non-global
