@@ -562,7 +562,6 @@ static int __mmc_blk_ioctl_cmd(struct mmc_card *card, struct mmc_blk_data *md,
 		return mmc_sanitize(card);
 
 	mmc_wait_for_req(card->host, &mrq);
-	memcpy(&idata->ic.response, cmd.resp, sizeof(cmd.resp));
 
 	if (cmd.error) {
 		dev_err(mmc_dev(card->host), "%s: cmd error %d\n",
@@ -611,6 +610,8 @@ static int __mmc_blk_ioctl_cmd(struct mmc_card *card, struct mmc_blk_data *md,
 	 */
 	if (idata->ic.postsleep_min_us)
 		usleep_range(idata->ic.postsleep_min_us, idata->ic.postsleep_max_us);
+
+	memcpy(&(idata->ic.response), cmd.resp, sizeof(cmd.resp));
 
 	if (idata->rpmb || (cmd.flags & MMC_RSP_R1B) == MMC_RSP_R1B) {
 		/*
@@ -1681,27 +1682,27 @@ static void mmc_blk_read_single(struct mmc_queue *mq, struct request *req)
 	do {
 		u32 status;
 		int err;
-		int retries = 0;
+        int retries = 0;
 
-		while (retries++ <= MMC_READ_SINGLE_RETRIES) {
-			mmc_blk_rw_rq_prep(mqrq, card, 1, mq);
-
-			mmc_wait_for_req(host, mrq);
-
-			err = mmc_send_status(card, &status);
-			if (err)
-				goto error_exit;
-
-			if (!mmc_host_is_spi(host) &&
-			    !mmc_ready_for_data(status)) {
-				err = mmc_blk_fix_state(card, req);
-				if (err)
-					goto error_exit;
-			}
-
-			if (!mrq->cmd->error)
-				break;
-		}
+        while (retries++ <= MMC_READ_SINGLE_RETRIES) {
+    		mmc_blk_rw_rq_prep(mqrq, card, 1, mq);
+    
+    		mmc_wait_for_req(host, mrq);
+    
+    		err = mmc_send_status(card, &status);
+    		if (err)
+    			goto error_exit;
+    
+    		if (!mmc_host_is_spi(host) &&
+    		    !mmc_ready_for_data(status)) {
+    			err = mmc_blk_fix_state(card, req);
+    			if (err)
+    				goto error_exit;
+    		}
+    
+    		if (!mrq->cmd->error)
+    			break;
+        }
 
 		if (mrq->cmd->error ||
 		    mrq->data->error ||

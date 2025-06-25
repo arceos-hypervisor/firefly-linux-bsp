@@ -36,6 +36,7 @@ config CPU_FREQ_STAT
 
 config CPU_FREQ_TIMES
        bool "CPU frequency time-in-state statistics"
+		depends on !PREEMPT_RT_FULL
        help
          Export CPU time-in-state information through procfs.
 

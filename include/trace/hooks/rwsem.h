@@ -17,6 +17,7 @@ struct rwsem_waiter;
 /* struct rw_semaphore, struct rwsem_waiter */
 #include <linux/rwsem.h>
 #endif /* __GENKSYMS__ */
+struct rwsem_waiter;
 DECLARE_HOOK(android_vh_rwsem_init,
 	TP_PROTO(struct rw_semaphore *sem),
 	TP_ARGS(sem));

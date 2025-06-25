@@ -71,6 +71,8 @@ DECLARE_HOOK(android_vh_rwsem_can_spin_on_owner,
 	TP_PROTO(struct rw_semaphore *sem, bool *ret, bool wlock),
 	TP_ARGS(sem, ret, wlock));
 
+struct task_struct;
+struct mutex_waiter;
 DECLARE_HOOK(android_vh_sched_show_task,
 	TP_PROTO(struct task_struct *task),
 	TP_ARGS(task));

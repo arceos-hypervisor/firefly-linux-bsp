@@ -360,7 +360,7 @@ static int __init ohci_platform_init(void)
 	ohci_init_driver(&ohci_platform_hc_driver, &platform_overrides);
 	return platform_driver_register(&ohci_platform_driver);
 }
-module_init(ohci_platform_init);
+late_initcall(ohci_platform_init);
 
 static void __exit ohci_platform_cleanup(void)
 {

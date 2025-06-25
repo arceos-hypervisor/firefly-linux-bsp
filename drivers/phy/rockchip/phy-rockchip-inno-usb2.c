@@ -1441,9 +1441,10 @@ static void rockchip_chg_detect_work(struct work_struct *work)
 	 * 4. Set the utmi_termselect to FS speed.
 	 * 5. Enable the DP/DM pulldown resistor.
 	 */
+	mutex_lock(&rport->mutex);
+
 	switch (rphy->chg_state) {
 	case USB_CHG_STATE_UNDEFINED:
-		mutex_lock(&rport->mutex);
 		/* Store the PHY current suspend configuration */
 		phy_sus_reg = &rport->port_cfg->phy_sus;
 		ret = regmap_read(base, phy_sus_reg->offset,
@@ -1561,6 +1562,7 @@ static void rockchip_chg_detect_work(struct work_struct *work)
 	 * detection stage, and release it after detect
 	 * the charger type.
 	 */
+	mutex_unlock(&rport->mutex);
 	schedule_delayed_work(&rport->chg_work, delay);
 }
 

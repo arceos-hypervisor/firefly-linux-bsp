@@ -180,7 +180,7 @@ static void __get_cpu_fpsimd_context(void)
  */
 static void get_cpu_fpsimd_context(void)
 {
-	local_bh_disable();
+	preempt_disable();
 	__get_cpu_fpsimd_context();
 }
 
@@ -201,7 +201,7 @@ static void __put_cpu_fpsimd_context(void)
 static void put_cpu_fpsimd_context(void)
 {
 	__put_cpu_fpsimd_context();
-	local_bh_enable();
+	preempt_enable();
 }
 
 static bool have_cpu_fpsimd_context(void)
@@ -219,11 +219,25 @@ static void __sve_free(struct task_struct *task)
 	task->thread.sve_state = NULL;
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+
 static void sve_free(struct task_struct *task)
 {
 	WARN_ON(test_tsk_thread_flag(task, TIF_SVE));
 
 	__sve_free(task);
+}
+#pragma GCC diagnostic pop
+
+static void *sve_free_atomic(struct task_struct *task)
+{
+	void *sve_state = task->thread.sve_state;
+
+	WARN_ON(test_tsk_thread_flag(task, TIF_SVE));
+
+	task->thread.sve_state = NULL;
+	return sve_state;
 }
 
 /*
@@ -1022,6 +1036,7 @@ void fpsimd_thread_switch(struct task_struct *next)
 void fpsimd_flush_thread(void)
 {
 	int vl, supported_vl;
+	void *mem = NULL;
 
 	if (!system_supports_fpsimd())
 		return;
@@ -1034,7 +1049,7 @@ void fpsimd_flush_thread(void)
 
 	if (system_supports_sve()) {
 		clear_thread_flag(TIF_SVE);
-		sve_free(current);
+		mem = sve_free_atomic(current);
 
 		/*
 		 * Reset the task vector length as required.
@@ -1068,6 +1083,7 @@ void fpsimd_flush_thread(void)
 	}
 
 	put_cpu_fpsimd_context();
+	kfree(mem);
 }
 
 /*

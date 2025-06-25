@@ -223,9 +223,9 @@
 	};
 };
 
-&u2phy0_otg { 
-	rockchip,typec-vbus-det; 
-}; 
+//&u2phy0_otg {
+//	rockchip,typec-vbus-det;
+//};
 
 &u2phy2_host { 
 	phy-supply = <&vcc5v0_host>; 
@@ -336,4 +336,16 @@
 &usbdrd_dwc3_0 {
 	dr_mode = "otg";
 	status = "okay";
+};
+
+&CPU_SLEEP {
+	status = "disabled";
+};
+
+&dfi {
+	status = "disabled";
+};
+
+&dmc {
+	status = "disabled";
 };

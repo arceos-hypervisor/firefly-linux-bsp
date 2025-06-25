@@ -4156,11 +4156,10 @@ dhd_prot_init(dhd_pub_t *dhd)
 	* only if dongle does not support EDL
 	*/
 #ifdef EWP_EDL
-	if (dhd->bus->api.fw_rev >= PCIE_SHARED_VERSION_6 && !dhd->dongle_edl_support)
+	if (dhd->bus->api.fw_rev >= PCIE_SHARED_VERSION_6 && !dhd->dongle_edl_support) {
 #else
-	if (dhd->bus->api.fw_rev >= PCIE_SHARED_VERSION_6)
+	if (dhd->bus->api.fw_rev >= PCIE_SHARED_VERSION_6) {
 #endif /* EWP_EDL */
-	{
 		if ((ret = dhd_prot_init_info_rings(dhd)) != BCME_OK) {
 			/* For now log and proceed, further clean up action maybe necessary
 			 * when we have more clarity.
@@ -10887,11 +10886,11 @@ dhd_fillup_ioct_reqst(dhd_pub_t *dhd, uint16 len, uint cmd, void* buf, int ifidx
 		return BCME_ERROR;
 
 #ifdef DBG_DW_CHK_PCIE_READ_LATENCY
-	preempt_disable();
+	migrate_disable();
 	begin_time = ktime_get();
 	R_REG(dhd->osh, (volatile uint16 *)(dhd->bus->tcm + addr));
 	end_time = ktime_get();
-	preempt_enable();
+	migrate_enable();
 	diff_ns = ktime_to_ns(ktime_sub(end_time, begin_time));
 	/* Check if the delta is greater than 1 msec */
 	if (diff_ns > (1 * NSEC_PER_MSEC)) {
@@ -13651,9 +13650,8 @@ dhd_prot_debug_info_print(dhd_pub_t *dhd)
 		prot->device_ipc_version,
 		prot->host_ipc_version,
 		prot->active_ipc_version));
-	DHD_ERROR(("d2h_intr_method -> %s d2h_intr_control -> %s\n",
-			dhd->bus->d2h_intr_method ? "PCIE_MSI" : "PCIE_INTX",
-			dhd->bus->d2h_intr_control ? "HOST_IRQ" : "D2H_INTMASK"));
+	DHD_ERROR(("d2h_intr_method -> %s\n",
+			dhd->bus->d2h_intr_method ? "PCIE_MSI" : "PCIE_INTX"));
 	DHD_ERROR(("max Host TS bufs to post: %d, posted %d\n",
 		prot->max_tsbufpost, prot->cur_ts_bufs_posted));
 	DHD_ERROR(("max INFO bufs to post: %d, posted %d\n",

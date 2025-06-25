@@ -64,7 +64,17 @@
 #define XC7160_REG_VALUE_16BIT		2
 #define XC7160_REG_VALUE_24BIT		3
 
-static DEFINE_MUTEX(xc7160_power_mutex);
+#define	XC7160_EXPOSURE_MIN		4
+#define	XC7160_EXPOSURE_STEP		1
+#define XC7160_VTS_MAX			0x7fff
+#define XC7160_GAIN_MIN		0x10
+#define XC7160_GAIN_MAX		0xf8
+#define XC7160_GAIN_STEP		1
+#define XC7160_GAIN_DEFAULT		0x10
+
+
+
+//static DEFINE_MUTEX(xc7160_power_mutex);
 
 #define OF_CAMERA_PINCTRL_STATE_DEFAULT	"rockchip,camera_default"
 #define OF_CAMERA_PINCTRL_STATE_SLEEP	"rockchip,camera_sleep"

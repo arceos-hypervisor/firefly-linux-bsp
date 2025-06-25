@@ -236,9 +236,6 @@ struct uart_port {
 	int			hw_stopped;		/* sw-assisted CTS flow state */
 	unsigned int		mctrl;			/* current modem ctrl settings */
 	unsigned int		timeout;		/* character-based timeout */
-#if defined(CONFIG_ARCH_ROCKCHIP) && defined(CONFIG_NO_GKI)
-	unsigned int		frame_time;		/* frame timing in ns */
-#endif
 	unsigned int		type;			/* port type */
 	const struct uart_ops	*ops;
 	unsigned int		custom_divisor;
@@ -261,9 +258,6 @@ struct uart_port {
 	const struct attribute_group **tty_groups;	/* all attributes (serial core use only) */
 	struct serial_rs485     rs485;
 	struct gpio_desc	*rs485_term_gpio;	/* enable RS485 bus termination */
-#if defined(CONFIG_ARCH_ROCKCHIP) && defined(CONFIG_NO_GKI)
-	struct gpio_desc	*rs485_de_gpio;		/* enable RS485 de */
-#endif
 	struct serial_iso7816   iso7816;
 	void			*private_data;		/* generic platform data pointer */
 

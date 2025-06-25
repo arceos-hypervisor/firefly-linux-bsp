@@ -996,7 +996,8 @@ static inline void update_mmu_cache(struct vm_area_struct *vma,
  */
 static inline bool arch_faults_on_old_pte(void)
 {
-	WARN_ON(preemptible());
+//	WARN_ON(preemptible());
+	cant_migrate();
 
 	return !cpu_has_hw_af();
 }

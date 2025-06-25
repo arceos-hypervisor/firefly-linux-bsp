@@ -952,10 +952,10 @@ static int kbasep_vinstr_collect_and_accumulate(
 
 	/* Request HW counters dump.
 	 * Disable preemption to make dump timestamp more accurate. */
-	preempt_disable();
+	migrate_disable();
 	*timestamp = kbasep_vinstr_get_timestamp();
 	rcode = kbase_instr_hwcnt_request_dump(vinstr_ctx->kctx);
-	preempt_enable();
+	migrate_enable();
 
 	if (!rcode)
 		rcode = kbase_instr_hwcnt_wait_for_dump(vinstr_ctx->kctx);

@@ -24,7 +24,6 @@
 #include <linux/sysrq.h>
 #include <linux/delay.h>
 #include <linux/mutex.h>
-#include <linux/math64.h>
 #include <linux/security.h>
 
 #include <linux/irq.h>
@@ -327,22 +326,39 @@ void
 uart_update_timeout(struct uart_port *port, unsigned int cflag,
 		    unsigned int baud)
 {
-	unsigned int size = tty_get_frame_size(cflag);
-#if defined(CONFIG_ARCH_ROCKCHIP) && defined(CONFIG_NO_GKI)
-	u64 frame_time;
+	unsigned int bits;
 
-	frame_time = (u64)size * NSEC_PER_SEC;
-#endif
-	size *= port->fifosize;
+	/* byte size and parity */
+	switch (cflag & CSIZE) {
+	case CS5:
+		bits = 7;
+		break;
+	case CS6:
+		bits = 8;
+		break;
+	case CS7:
+		bits = 9;
+		break;
+	default:
+		bits = 10;
+		break; /* CS8 */
+	}
+
+	if (cflag & CSTOPB)
+		bits++;
+	if (cflag & PARENB)
+		bits++;
+
+	/*
+	 * The total number of bits to be transmitted in the fifo.
+	 */
+	bits = bits * port->fifosize;
 
 	/*
 	 * Figure the timeout to send the above number of bits.
 	 * Add .02 seconds of slop
 	 */
-	port->timeout = (HZ * size) / baud + HZ/50;
-#if defined(CONFIG_ARCH_ROCKCHIP) && defined(CONFIG_NO_GKI)
-	port->frame_time = DIV64_U64_ROUND_UP(frame_time, baud);
-#endif
+	port->timeout = (HZ * bits) / baud + HZ/50;
 }
 
 EXPORT_SYMBOL(uart_update_timeout);
@@ -1651,15 +1667,10 @@ static void uart_wait_until_sent(struct tty_struct *tty, int timeout)
 	 * Note: we have to use pretty tight timings here to satisfy
 	 * the NIST-PCTS.
 	 */
-#if defined(CONFIG_ARCH_ROCKCHIP) && defined(CONFIG_NO_GKI)
-	char_time = max(nsecs_to_jiffies(port->frame_time / 5), 1UL);
-#else
 	char_time = (port->timeout - HZ/50) / port->fifosize;
 	char_time = char_time / 5;
 	if (char_time == 0)
 		char_time = 1;
-#endif
-
 	if (timeout && timeout < char_time)
 		char_time = timeout;
 
@@ -3312,12 +3323,6 @@ int uart_get_rs485_mode(struct uart_port *port)
 		return dev_err_probe(dev, ret, "Cannot get rs485-term-gpios\n");
 	}
 
-#if defined(CONFIG_ARCH_ROCKCHIP) && defined(CONFIG_NO_GKI)
-	port->rs485_de_gpio = devm_gpiod_get_optional(dev, "rs485-de",
-							GPIOD_OUT_LOW);
-	if (IS_ERR(port->rs485_de_gpio))
-		port->rs485_de_gpio = NULL;
-#endif
 	return 0;
 }
 EXPORT_SYMBOL_GPL(uart_get_rs485_mode);
